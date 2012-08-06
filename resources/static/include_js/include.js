@@ -1030,6 +1030,36 @@
       }
     }
 
+    function defined(item) {
+      return typeof item !== "undefined";
+    }
+
+    function log(msg) {
+      try {
+        console.log(msg);
+      } catch(e) {
+        /* ignore */
+      }
+    }
+
+    function checkDeprecated(options, field) {
+      if(defined(options[field])) {
+        log(field + " has been deprecated");
+        return true;
+      }
+    }
+
+    function checkRenamed(options, oldName, newName) {
+      if (defined(options[oldName]) &&
+          defined(options[newName])) {
+        throw "you cannot supply *both* " + oldName + " and " + newName;
+      }
+      else if(checkDeprecated(options, oldName)) {
+        options[newName] = options[oldName];
+        delete options[oldName];
+      }
+    }
+
     function internalWatch(options) {
       if (typeof options !== 'object') return;
 
@@ -1050,20 +1080,7 @@
       _open_hidden_iframe();
 
       // back compat support for loggedInEmail
-      if (typeof options.loggedInEmail !== 'undefined' &&
-          typeof options.loggedInUser !== 'undefined') {
-        throw "you cannot supply *both* loggedInEmail and loggedInUser";
-      }
-      else if(typeof options.loggedInEmail !== 'undefined') {
-        try {
-          console.log("loggedInEmail has been deprecated");
-        } catch(e) {
-          /* ignore error */
-        }
-
-        options.loggedInUser = options.loggedInEmail;
-        delete options.loggedInEmail;
-      }
+      checkRenamed(options, "loggedInEmail", "loggedInUser");
 
       // check that the commChan was properly initialized before interacting with it.
       // on unsupported browsers commChan might still be undefined, in which case
@@ -1073,34 +1090,6 @@
           method: 'loggedInUser',
           params: options.loggedInUser
         });
-      }
-    }
-
-    function defined(item) {
-      return typeof item !== "undefined";
-    }
-
-    function log(msg) {
-      try {
-        console.log(msg);
-      } catch(e) {
-        /* ignore */
-      }
-    }
-
-    function checkDeprecated(options, field) {
-      if(defined(options[field])) {
-        log(field + " has been deprecated");
-      }
-    }
-
-    function checkRenamed(options, oldName, newName) {
-      if (defined(options[oldName]) &&
-          defined(options[newName])) {
-        throw "you cannot supply *both* " + oldName + " and " + newName;
-      }
-      else {
-        checkDeprecated(options, oldName);
       }
     }
 
