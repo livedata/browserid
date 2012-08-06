@@ -1076,14 +1076,38 @@
       }
     }
 
-    function internalRequest(options) {
-      if (options.requiredEmail) {
-        try {
-          console.log("requiredEmail has been deprecated");
-        } catch(e) {
-          /* ignore error */
-        }
+    function defined(item) {
+      return typeof item !== "undefined";
+    }
+
+    function log(msg) {
+      try {
+        console.log(msg);
+      } catch(e) {
+        /* ignore */
       }
+    }
+
+    function checkDeprecated(options, field) {
+      if(defined(options[field])) {
+        log(field + " has been deprecated");
+      }
+    }
+
+    function checkRenamed(options, oldName, newName) {
+      if (defined(options[oldName]) &&
+          defined(options[newName])) {
+        throw "you cannot supply *both* " + oldName + " and " + newName;
+      }
+      else {
+        checkDeprecated(options, oldName);
+      }
+    }
+
+    function internalRequest(options) {
+      checkDeprecated(options, "requiredEmail");
+      checkRenamed(options, "tosURL", "termsOfService");
+      checkRenamed(options, "privacyURL", "privacyPolicy");
 
       // focus an existing window
       if (w) {
